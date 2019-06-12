@@ -11,6 +11,8 @@ use Directus\Util\ArrayUtils;
 use Directus\Util\StringUtils;
 use Directus\Validator\Exception\InvalidRequestException;
 use Zend\Db\TableGateway\TableGateway;
+use function Directus\generate_uuid1;
+use function Directus\generate_uuid5;
 
 class ItemsService extends AbstractService
 {
@@ -23,6 +25,9 @@ class ItemsService extends AbstractService
     public function createItem($collection, $payload, $params = [])
     {
         $this->enforceCreatePermissions($collection, $payload, $params);
+
+        $this->createUUID($collection, $payload);
+
         $this->validatePayload($collection, null, $payload, $params);
 
         $tableGateway = $this->createTableGateway($collection);
@@ -352,5 +357,15 @@ class ItemsService extends AbstractService
         $row = $tableGateway->selectWith($select)->current();
 
         return $row[$collectionObject->getStatusField()->getName()];
+    }
+
+    protected function createUUID($collectionName, &$payload)
+    {
+
+        $collection = $this->getSchemaManager()->getCollection($collectionName);
+        $field = $collection->getPrimaryKey();
+        if (isset($field) && $field->getOptions('format') === 'uuid') {
+            $payload[$collection->getPrimaryKeyName()] =  generate_uuid5(generate_uuid1(), $collectionName);
+        }
     }
 }

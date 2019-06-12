@@ -120,8 +120,13 @@ class SchemaFactory
             }
 
             if (ArrayUtils::get($options, 'primary_key') == true) {
+                /*
+                    if PK format is uuid, then it will create performance issue for huge db.
+                    http://kccoder.com/mysql/uuid-vs-int-insert-performance/
+                */
                 $table->addConstraint(new PrimaryKey($column->getName()));
-            } if (ArrayUtils::get($options, 'unique') == true) {
+            }
+            if (ArrayUtils::get($options, 'unique') == true) {
                 $table->addConstraint(new UniqueKey($column->getName()));
             }
         }
@@ -138,7 +143,8 @@ class SchemaFactory
 
             if (ArrayUtils::get($options, 'primary_key') == true) {
                 $table->addConstraint(new PrimaryKey($column->getName()));
-            } if (ArrayUtils::get($options, 'unique') == true) {
+            }
+            if (ArrayUtils::get($options, 'unique') == true) {
                 $table->addConstraint(new UniqueKey($column->getName()));
             }
         }
@@ -229,14 +235,14 @@ class SchemaFactory
      *
      * @return \Zend\Db\Adapter\Driver\StatementInterface|\Zend\Db\ResultSet\ResultSet
      */
-    public function buildTable(AbstractSql $table,$charset="")
+    public function buildTable(AbstractSql $table, $charset = "")
     {
         $connection = $this->schemaManager->getSource()->getConnection();
         $sql = new Sql($connection);
-        
+
         $tableQuery = $sql->buildSqlString($table);
-        $tableQuery = !empty($charset) ? $tableQuery."charset = ".$charset: $tableQuery;
-                
+        $tableQuery = !empty($charset) ? $tableQuery . "charset = " . $charset : $tableQuery;
+
         // TODO: Allow charset and comment
         return $connection->query(
             $tableQuery,
