@@ -594,4 +594,18 @@ class Collection extends AbstractObject
 
         return $attributes;
     }
+
+    /**
+     * Gets all child fields
+     *
+     * @param array $names
+     *
+     * @return Field[]
+     */
+    public function getChildFields(array $names = [])
+    {
+        return array_filter($this->getFields($names), function (Field $field) {
+            return $field->isAlias() || $field->isManyToOne();
+        });
+    }
 }
